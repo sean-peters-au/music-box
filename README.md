@@ -10,9 +10,11 @@ This seemed like a fun idea to test out my new 3D printer, and to put a smile on
 
 - Setup your environment
 ```sh
+brew install aubio
 conda create -n music_box python=3.10
 conda activate music_box
 conda install -c conda-forge cadquery trimesh
+pip install click
 pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq-warehouse
 ```
 

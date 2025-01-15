@@ -29,7 +29,7 @@ class Spindle:
 
         # Threaded portion
         self.thread_height = 5.0
-        self.thread_major_diam = 5.5
+        self.thread_major_diam = 5.9
         self.thread_pitch = 0.625
 
         # Handle
