@@ -8,14 +8,20 @@ import math
 # Dimensions for the main hollow cassette cylinder
 cassette_diameter       = 13.0  # mm, outer diameter of main cassette
 cassette_radius         = cassette_diameter / 2.0
-cassette_total_height   = 20.0  # from Z=0 to Z=20
+cassette_total_height   = 17.5
 cassette_wall_thickness = 4.0   # => 5 mm ID hole (13 OD - 4 - 4 = 5)
 
+# Tine dimensions
+total_tines = 18
+total_tine_width = 16.0
+tine_width = total_tine_width / total_tines
+
 # Pins
-num_pins        = 16
+num_pins        = total_tines
 pin_radial_bump = 0.5   # how far each pin extends radially beyond the cassette OD
-pin_width       = 0.5   # tangential (circumferential) width
-pin_height      = 1.0   # vertical dimension of each pin
+pin_width       = tine_width / 2
+pin_height      = tine_width / 2
+pin_vertical_offset = 1.0
 
 # Base ring dimensions
 base_ring_height = 1.8  # mm (from Z=0..1.8)
@@ -51,19 +57,18 @@ inner_cylinder = (
 
 cassette_body = outer_cylinder.cut(inner_cylinder)
 
-# 3) PLACE 16 PINS IN A SPIRAL FROM Z=4..16
+# Pins
 pins = cq.Workplane("XY")
 
-z_min = base_ring_height + 2.0
-z_max = base_ring_height + cassette_total_height - 2.0
-z_span = z_max - z_min  # 12 mm total vertical span for pins
+z_min = base_ring_height + pin_vertical_offset
 
 for i in range(num_pins):
     angle_deg = i * (360.0 / num_pins)
     angle_rad = math.radians(angle_deg)
 
-    # Compute the pin's center Z coordinate (spiral from 4..16)
-    z_pin_center = z_min + (z_span * i / (num_pins - 1))
+    centre_offset = pin_width / 2
+    spacing_offset = tine_width * i
+    z_pin_center = z_min + spacing_offset + centre_offset
 
     # Place the pin on the cassette's outer radius in X/Y
     x_center = cassette_radius * math.cos(angle_rad)
@@ -247,5 +252,5 @@ full_assembly = (
 )
 
 # Export
-full_assembly.val().exportStl("cassette_wheel.stl", tolerance=0.01)
-print("Exported 'cassette_wheel.stl'.")
+full_assembly.val().exportStl("cassette.stl", tolerance=0.01)
+print("Exported 'cassette.stl'.")

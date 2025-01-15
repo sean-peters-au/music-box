@@ -16,7 +16,7 @@ taper_diam_bot = 4.0      # mm  # tip at the very bottom
 
 # Threaded Portion
 thread_height = 5.0       # mm
-thread_major_diam = 5.0   # mm (outer thread diameter)
+thread_major_diam = 5.5   # mm (outer thread diameter)
 # Adjust pitch for 8 revolutions over 5mm
 thread_pitch = 0.625      # was 0.8
 
