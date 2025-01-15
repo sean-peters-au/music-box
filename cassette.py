@@ -93,17 +93,28 @@ for i in range(num_pins):
 wheel_with_pins_and_base = cassette_body.union(pins).union(base_ring)
 
 # Top assembly dimensions
+lower_circle_height = 0.5
+lower_circle_diam = 16.0
 big_cog_height = 1.8
 small_cog_height = 1.5
 top_circle_height = 0.7
 
 # Calculate z-positions for stacked components
-big_cog_z_start = base_ring_height + cassette_total_height
+lower_circle_z_start = base_ring_height + cassette_total_height
+big_cog_z_start = lower_circle_z_start + lower_circle_height
 big_cog_z_top = big_cog_z_start + big_cog_height
 small_cog_z_start = big_cog_z_top
 small_cog_z_top = small_cog_z_start + small_cog_height
 top_circle_z_start = small_cog_z_top
 top_circle_z_top = top_circle_z_start + top_circle_height
+
+# Create lower circle
+lower_circle = (
+    cq.Workplane("XY")
+    .workplane(offset=lower_circle_z_start)
+    .circle(lower_circle_diam / 2.0)
+    .extrude(lower_circle_height)
+)
 
 # Large cog dimensions
 big_cog_base_diam = 17.0
@@ -235,9 +246,10 @@ top_circle = (
     .extrude(top_circle_height)
 )
 
-# Combine entire assembly: cassette + ring + pins + large cog + small cog + top circle
+# Combine entire assembly
 full_assembly = (
     wheel_with_pins_and_base
+    .union(lower_circle)
     .union(big_cog)
     .union(small_cog)
     .union(top_circle)
