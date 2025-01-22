@@ -71,6 +71,10 @@ class CassetteCAD:
         self.small_cog_base_diam = 5.5
         self.small_cog_teeth_diam = 9.0
         self.small_cog_num_teeth = 12
+        self.small_cog_base_radius = self.small_cog_base_diam / 2.0
+        self.small_cog_teeth_radius = self.small_cog_teeth_diam / 2.0
+        self.small_cog_radial_thick = self.small_cog_teeth_radius - self.small_cog_base_radius
+        self.small_cog_teeth_width = 1.0
 
         # Top circle
         self.top_circle_height = 1.5
@@ -246,14 +250,10 @@ class CassetteCAD:
         return big_cog_base.union(big_cog_teeth)
 
     def _make_small_cog(self, z_start: float) -> cq.Workplane:
-        small_cog_base_radius = self.small_cog_base_diam / 2.0
-        small_cog_teeth_radius = self.small_cog_teeth_diam / 2.0
-        small_cog_radial_thick = small_cog_teeth_radius - small_cog_base_radius
-
         small_cog_base = (
             cq.Workplane("XY")
             .workplane(offset=z_start)
-            .circle(small_cog_base_radius)
+            .circle(self.small_cog_base_radius)
             .extrude(self.small_cog_height)
         )
 
@@ -262,8 +262,8 @@ class CassetteCAD:
             angle_deg = i * (360.0 / self.small_cog_num_teeth)
             angle_rad = math.radians(angle_deg)
             tooth_3d = self._make_small_cog_tooth(
-                radial_thickness=small_cog_radial_thick,
-                tooth_width=1.0,
+                radial_thickness=self.small_cog_radial_thick,
+                tooth_width=self.small_cog_teeth_width,
                 tooth_height=self.small_cog_height,
                 fillet_3d=0.4
             )
@@ -271,8 +271,8 @@ class CassetteCAD:
                 tooth_3d
                 .rotate((0, 0, 0), (0, 0, 1), angle_deg)
                 .translate((
-                    small_cog_base_radius * math.cos(angle_rad),
-                    small_cog_base_radius * math.sin(angle_rad),
+                    self.small_cog_base_radius * math.cos(angle_rad),
+                    self.small_cog_base_radius * math.sin(angle_rad),
                     z_start
                 ))
             )
