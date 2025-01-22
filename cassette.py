@@ -62,7 +62,7 @@ class CassetteCAD:
         self.big_cog_base_diam = 17.0
         self.big_cog_teeth_diam = 20.0
         self.num_teeth_big = 46
-        self.small_cog_base_diam = 5.0
+        self.small_cog_base_diam = 5.5
         self.small_cog_teeth_diam = 8.0
         self.num_teeth_small = 12
         self.top_circle_diam = 3.0
