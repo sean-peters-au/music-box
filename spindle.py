@@ -7,7 +7,7 @@ import cadquery as cq
 import math
 from cq_warehouse.thread import Thread
 
-class Spindle:
+class SpindleCAD:
     """
     Builds a rod with:
       - A bottom taper
@@ -29,8 +29,13 @@ class Spindle:
 
         # Threaded portion
         self.thread_height = 5.0
-        self.thread_major_diam = 5.9
+        self.thread_major_diam = 5.7
+        self.thread_minor_diam = 5.2
         self.thread_pitch = 0.625
+        self.thread_apex_radius = self.thread_major_diam / 2
+        self.thread_apex_width = self.thread_pitch / 2 
+        self.thread_root_radius = self.thread_minor_diam / 2
+        self.thread_root_width = self.thread_pitch / 2 
 
         # Handle
         self.handle_diam   = 8.0
@@ -82,10 +87,10 @@ class Spindle:
     def _make_threaded_portion(self) -> cq.Workplane:
         # Create external thread surface
         my_thread = Thread(
-            apex_radius=self.thread_major_diam / 2,
-            apex_width=0.4,
-            root_radius=4.5 / 2,  # approximate for an M5 root
-            root_width=0.4,
+            apex_radius=self.thread_apex_radius,
+            apex_width=self.thread_apex_width,
+            root_radius=self.thread_root_radius,
+            root_width=self.thread_root_width,
             pitch=self.thread_pitch,
             length=self.thread_height,
             hand="right",
@@ -94,11 +99,10 @@ class Spindle:
         thread_cq = my_thread.cq_object.translate((0, 0, self.z_thread_start))
 
         # Create the minor-diameter rod core
-        minor_diam = 4.2  # approximate for M5
         rod_core = (
             cq.Workplane("XY")
             .workplane(offset=self.z_thread_start)
-            .circle(minor_diam * 0.5)
+            .circle(self.thread_minor_diam * 0.5)
             .extrude(self.thread_height)
         )
 

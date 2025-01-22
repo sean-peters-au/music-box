@@ -13,9 +13,10 @@ This seemed like a fun idea to test out my new 3D printer, and to put a smile on
 brew install aubio
 conda create -n music_box python=3.10
 conda activate music_box
-conda install -c conda-forge cadquery trimesh
+conda install -c conda-forge cadquery trimesh anthropic
 pip install click
 pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq-warehouse
+export ANTHROPIC_API_KEY=your_key_here
 ```
 
 - Print cassette from your mp3
