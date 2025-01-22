@@ -54,18 +54,27 @@ class CassetteCAD:
         self.base_ring_id = 5.0
 
         # Top assembly
+        # Lower circle, big cog, small cog, and a top circle
+
+        # Lower circle
         self.lower_circle_height = 2.5
         self.lower_circle_diam = 16.0
+
+        # Big cog
         self.big_cog_height = 2.0
-        self.small_cog_height = 2.0
-        self.top_circle_height = 1.4
         self.big_cog_base_diam = 17.0
         self.big_cog_teeth_diam = 20.0
-        self.num_teeth_big = 46
+        self.big_cog_num_teeth = 46
+
+        # Small cog
+        self.small_cog_height = 2.0
         self.small_cog_base_diam = 5.5
-        self.small_cog_teeth_diam = 8.0
-        self.num_teeth_small = 12
-        self.top_circle_diam = 3.0
+        self.small_cog_teeth_diam = 9.0
+        self.small_cog_num_teeth = 12
+
+        # Top circle
+        self.top_circle_height = 1.5
+        self.top_circle_diam = 2.8
 
         # Store the incoming note events
         self.note_events = note_events
@@ -213,8 +222,8 @@ class CassetteCAD:
         )
 
         big_cog_teeth = cq.Workplane("XY")
-        for i in range(self.num_teeth_big):
-            angle_deg = i * (360.0 / self.num_teeth_big)
+        for i in range(self.big_cog_num_teeth):
+            angle_deg = i * (360.0 / self.big_cog_num_teeth)
             angle_rad = math.radians(angle_deg)
             tooth_3d = self._make_big_cog_tooth(
                 radial_thickness=big_cog_radial_thick,
@@ -249,8 +258,8 @@ class CassetteCAD:
         )
 
         small_cog_teeth = cq.Workplane("XY")
-        for i in range(self.num_teeth_small):
-            angle_deg = i * (360.0 / self.num_teeth_small)
+        for i in range(self.small_cog_num_teeth):
+            angle_deg = i * (360.0 / self.small_cog_num_teeth)
             angle_rad = math.radians(angle_deg)
             tooth_3d = self._make_small_cog_tooth(
                 radial_thickness=small_cog_radial_thick,
