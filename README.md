@@ -2,7 +2,7 @@
 
 This is a simple project to modify a mechnical music box with custom songs. 
 
-This seemed like a fun idea to test out my new 3D printer, and to put a smile on my 4 month old son's face. It worked! Although - probably more efficient to just pull funny faces at him :)
+This seemed like a fun idea to test out my new 3D printer, and to put a smile on my 4 month old son's face. It worked! Although - probably easier to just pull funny faces at him :)
 
 ## Instructions
 
@@ -16,12 +16,13 @@ conda activate music_box
 conda install -c conda-forge cadquery trimesh anthropic
 pip install click
 pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq-warehouse
+pip install git+https://github.com/meadiode/cq_gears.git
 export ANTHROPIC_API_KEY=your_key_here
 ```
 
 - Print cassette from your mp3
 ```sh
-python musicbox.py mp3/twinkle-twinkle-little-star.mp3
+python main.py --input-test "fur elise"
 ```
 
 - Print the components in `stl/`

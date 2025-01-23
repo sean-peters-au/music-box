@@ -6,6 +6,7 @@ based on incoming note/timing data.
 
 import math
 import cadquery as cq
+import cq_gears
 from tine import Tine
 
 
@@ -27,13 +28,6 @@ class CassetteCAD:
             note_events: A list of (time_in_sec, note_name) tuples.
             rotation_duration: How long (seconds) the cassette rotation takes.
         """
-        # Core geometry parameters
-        self.cassette_rotation_seconds = float(rotation_duration)
-        self.cassette_diameter = 13.0
-        self.cassette_radius = self.cassette_diameter / 2.0
-        self.cassette_total_height = 18.0
-        self.cassette_wall_thickness = 4.0
-
         # Pin/tine geometry
         self.tine_notes = Tine().notes
         self.total_tines = len(self.tine_notes)
@@ -44,24 +38,33 @@ class CassetteCAD:
         self.pin_height = self.tine_width / 2
         self.pin_vertical_offset = 1.0
         self.arc_safety_factor = 1.2
+
+        # Base ring
+        self.base_ring_height = 1.5
+        self.base_ring_od = 15.0
+        self.base_ring_id = 5.0
+
+        # Cassette
+        self.cassette_rotation_seconds = float(rotation_duration)
+        self.cassette_diameter = 13.0
+        self.cassette_radius = self.cassette_diameter / 2.0
+        self.cassette_total_height = 17.5
+        self.cassette_wall_thickness = 4.0
+        self.interior_radius_opening = self.cassette_radius - self.cassette_wall_thickness
+        self.interior_radius = self.interior_radius_opening - 2.0
         self.min_note_angle_spacing = math.degrees(
             (self.pin_width * self.arc_safety_factor) / self.cassette_radius
         )
-
-        # Base ring
-        self.base_ring_height = 2.0
-        self.base_ring_od = 15.0
-        self.base_ring_id = 5.0
 
         # Top assembly
         # Lower circle, big cog, small cog, and a top circle
 
         # Lower circle
-        self.lower_circle_height = 2.5
+        self.lower_circle_height = 1.5
         self.lower_circle_diam = 16.0
 
         # Big cog
-        self.big_cog_height = 2.0
+        self.big_cog_height = 1.5
         self.big_cog_base_diam = 17.0
         self.big_cog_teeth_diam = 20.0
         self.big_cog_num_teeth = 46
@@ -77,7 +80,7 @@ class CassetteCAD:
         self.small_cog_teeth_width = 1.0
 
         # Top circle
-        self.top_circle_height = 1.5
+        self.top_circle_height = 1
         self.top_circle_diam = 2.8
 
         # Store the incoming note events
@@ -178,13 +181,17 @@ class CassetteCAD:
             .circle(self.cassette_radius)
             .extrude(self.cassette_total_height)
         )
-        inner_cylinder = (
+
+        inner_cut = (
             cq.Workplane("XY")
             .workplane(offset=self.base_ring_height)
-            .circle(self.cassette_radius - self.cassette_wall_thickness)
-            .extrude(self.cassette_total_height)
+            .circle(self.interior_radius_opening)
+            .workplane(offset=self.cassette_total_height)
+            .circle(self.interior_radius)
+            .loft()
         )
-        return outer_cylinder.cut(inner_cylinder)
+
+        return outer_cylinder.cut(inner_cut)
 
     def _make_top_assembly(self) -> cq.Workplane:
         lower_circle_z_start = self.base_ring_height + self.cassette_total_height
@@ -249,37 +256,6 @@ class CassetteCAD:
 
         return big_cog_base.union(big_cog_teeth)
 
-    def _make_small_cog(self, z_start: float) -> cq.Workplane:
-        small_cog_base = (
-            cq.Workplane("XY")
-            .workplane(offset=z_start)
-            .circle(self.small_cog_base_radius)
-            .extrude(self.small_cog_height)
-        )
-
-        small_cog_teeth = cq.Workplane("XY")
-        for i in range(self.small_cog_num_teeth):
-            angle_deg = i * (360.0 / self.small_cog_num_teeth)
-            angle_rad = math.radians(angle_deg)
-            tooth_3d = self._make_small_cog_tooth(
-                radial_thickness=self.small_cog_radial_thick,
-                tooth_width=self.small_cog_teeth_width,
-                tooth_height=self.small_cog_height,
-                fillet_3d=0.4
-            )
-            tooth_3d = (
-                tooth_3d
-                .rotate((0, 0, 0), (0, 0, 1), angle_deg)
-                .translate((
-                    self.small_cog_base_radius * math.cos(angle_rad),
-                    self.small_cog_base_radius * math.sin(angle_rad),
-                    z_start
-                ))
-            )
-            small_cog_teeth = small_cog_teeth.union(tooth_3d)
-
-        return small_cog_base.union(small_cog_teeth)
-
     def _make_big_cog_tooth(
         self,
         radial_thickness: float,
@@ -301,13 +277,51 @@ class CassetteCAD:
         tooth_3d = shape_2d.extrude(tooth_height)
         return tooth_3d.edges("|Z").fillet(fillet_3d)
 
-    def _make_small_cog_tooth(
-        self,
-        radial_thickness: float,
-        tooth_width: float,
-        tooth_height: float,
-        fillet_3d: float
-    ) -> cq.Workplane:
-        shape_2d = cq.Workplane("XY").rect(radial_thickness, tooth_width, centered=(False, True))
-        tooth_3d = shape_2d.extrude(tooth_height)
-        return tooth_3d.edges().fillet(fillet_3d)
+    def _make_small_cog(self, z_start: float) -> cq.Workplane:
+        # These offsets are tweaks to get our bevel gear right
+        flush_offset = 0.5  # z offset to make the cog sit flush with the big cog
+        tooth_offset = 1  # outer radius offset to make the teeth longer
+
+        z_start = z_start - flush_offset
+
+        module = (self.small_cog_teeth_diam + tooth_offset) / (self.small_cog_num_teeth + 2)
+
+        # Create the bevel gear
+        gear = cq_gears.BevelGear(
+            module=module,
+            teeth_number=self.small_cog_num_teeth,
+            width=self.small_cog_height,
+            pressure_angle=20.0,
+            spiral_angle=0.0,
+            cone_angle=45.0,
+            face_width = (self.small_cog_height + flush_offset)/ math.sin(math.radians(45.0))
+        )
+
+        # This is the raw 3D gear solid - wrap it in a Workplane
+        small_cog_solid = cq.Workplane("XY").add(gear.build())
+
+        # Create a central ring
+        central_ring = (
+            cq.Workplane("XY")
+            .circle(self.small_cog_base_radius)
+            .extrude(self.small_cog_height)
+        )
+
+        # Combine the gear and ring
+        small_cog_solid = small_cog_solid.union(central_ring)
+
+        # Create a cutting cylinder to remove top half of bevels
+        cutting_cylinder = (
+            cq.Workplane("XY")
+            .circle(self.small_cog_teeth_diam)  # Make it bigger than the gear
+            .extrude(self.small_cog_height)     # Cut at the base height
+        )
+        
+        # Cut away everything above the base height
+        small_cog_solid = small_cog_solid.intersect(cutting_cylinder)
+
+        # Translate the gear so its bottom sits at z_start
+        small_cog_solid = small_cog_solid.translate((0, 0, z_start))
+
+        # Return as a CadQuery Workplane for consistency
+        return small_cog_solid
