@@ -28,7 +28,7 @@ class SpindleCAD:
         self.taper_diam_bot = 4.0
 
         # Threaded portion
-        self.thread_height = 5.0
+        self.thread_height = 6.0
         self.thread_major_diam = 5.7
         self.thread_minor_diam = 5.2
         self.thread_pitch = 0.625
@@ -40,6 +40,7 @@ class SpindleCAD:
         # Handle
         self.handle_diam   = 8.0
         self.handle_height = 4.0
+        self.handle_fillet_radius = 0.8
 
         # Wings
         self.wing_count      = 4
@@ -121,8 +122,14 @@ class SpindleCAD:
 
         for i in range(self.wing_count):
             angle_deg = i * (360.0 / self.wing_count)
+            # Create the basic wing shape
             single_wing_2d = cq.Workplane("XY").rect(self.wing_radial_len, self.wing_width, centered=True)
             single_wing_3d = single_wing_2d.extrude(self.wing_height)
+            
+            # Add fillets to all edges to make it comfortable to handle
+            single_wing_3d = single_wing_3d.edges().fillet(self.handle_fillet_radius)
+            
+            # Position and rotate the wing
             single_wing_3d = single_wing_3d.translate((self.handle_diam / 2, 0.0, self.z_handle_start))
             single_wing_3d = single_wing_3d.rotate((0, 0, 0), (0, 0, 1), angle_deg)
             wings_3d = wings_3d.union(single_wing_3d)

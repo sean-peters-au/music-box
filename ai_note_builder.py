@@ -36,7 +36,7 @@ def get_notes_from_text(song_description: str, duration: float) -> List[Tuple[fl
     - The notes must be spaced far enough apart to allow the tines to resonate (minimum 0.15 seconds between same note)
     - Music boxes can play multiple notes simultaneously for chords or richer arrangements
     - Music boxes typically play at a moderate to brisk tempo (quarter note ≈ 0.3-0.5 seconds)
-    - The arrangement should balance simplicity with musicality - chords and harmonies are welcome when appropriate
+    - The arrangement should balance simplicity with musicality
     
     Please provide the notes as a JSON array of [time_in_seconds, note_name] pairs.
     Times must start at 0 and cannot exceed {duration} seconds.
