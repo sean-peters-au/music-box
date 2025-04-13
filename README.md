@@ -2,8 +2,6 @@
 
 This is a simple project to modify a mechnical music box with custom songs. 
 
-This seemed like a fun idea to test out my new 3D printer, and to put a smile on my 4 month old son's face. It worked! Although - probably easier to just pull funny faces at him :)
-
 ## Instructions
 
 - Buy this music box https://www.aliexpress.com/item/1005006822293186.html
@@ -20,21 +18,15 @@ pip install git+https://github.com/meadiode/cq_gears.git
 export ANTHROPIC_API_KEY=your_key_here
 ```
 
-- Print cassette from your mp3
+- Print cassette of a song you'd like
 ```sh
 python main.py --input-test "fur elise"
 ```
 
 - Print the components in `stl/`
 
-- Remove the existing spindle (I managed to just reverse it out with an appropriately sized drill bit).
-<image>
+- Remove the existing spindle
 
-- Remove the existing cassette
-<image>
-
-- Place in new cassette
-<image>
+- Remove the existing cassette, and replace with your printed cassette
 
 - Thread in the new spindle.
-<image>
